@@ -1,0 +1,26 @@
+/*  
+ * grafe.idp
+ *
+ */
+ 
+vocabulary V {
+    type Knoop
+    Boog(Knoop, Knoop)
+    Bereikbaar(Knoop, Knoop)
+}
+
+structure S : V {
+    Knoop = { A; B; C; D; E; }
+    Boog = { A,B ; A,C ; B,E ; C,D ; C,E ; D,E ; E,B; }
+}
+
+Theory T : V {
+    {
+        !a[Knoop], b[Knoop]: Bereikbaar(a, b) <- Boog(a, b).
+        !a[Knoop], b[Knoop]: Bereikbaar(a, b) <- ?z[Knoop] : Bereikbaar(a, z) & Bereikbaar(z, b).
+    }
+}
+
+procedure main(){
+    printmodels(modelexpand(T,S))
+}

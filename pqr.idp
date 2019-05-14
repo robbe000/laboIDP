@@ -1,0 +1,20 @@
+//Robbe Goovaerts
+
+vocabulary V {
+    p
+    q
+   	r
+}
+
+structure S: V {
+    //r = false
+}
+
+theory T: V {
+    (p => q) <=> (p <= r).
+}
+
+procedure main() {
+    stdoptions.nbmodels = 0
+    printmodels(modelexpand(T, S))
+}

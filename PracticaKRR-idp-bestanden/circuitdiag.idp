@@ -1,0 +1,72 @@
+/*  
+ * circuit.idp
+ *
+ */
+
+vocabulary CircVoc {
+	type Wire
+    type Gate
+    Output(Gate) : Wire
+    FirstInput(Gate) : Wire
+    SecondInput(Gate) : Wire
+    Xor(Gate)
+    And(Gate)
+    Or(Gate)
+    On(Wire)
+    InputWire(Wire)
+    InputWireOn(Wire)
+    OutputWire(Wire)
+    OutputWireOn(Wire)
+    ObservedOn(Wire)
+    ObservedOff(Wire)
+    
+    Broken(Gate)
+    type nbBroken isa int
+    NbBroken : nbBroken
+}
+
+structure Circuit : CircVoc {
+    Wire = { K; L; M; N; O; P; Q; R; }
+    Gate = { A; B; C; D; E; }
+    Output = { A -> N; B -> P; C -> O; D -> Q; E -> R; }
+    FirstInput = { A -> K; B -> N; C -> L; D -> M; E -> Q; }
+    SecondInput = { A -> L; B -> M; C -> K; D -> N; E -> O; }
+    Xor = { A; B; }
+    And = { C; D; }
+    Or = { E; }
+    //On = {K;M;N;Q;R}
+    InputWire = {K ; M; L}
+    InputWireOn = {K;L}
+    OutputWire = {P;R}
+    //OutputWireOn = {P}
+    //OutputWireOn = {P ; R}
+    
+    //Voor de testen
+    ObservedOn = {O}
+    ObservedOff = {N}
+    
+    nbBroken = {0 .. 10}
+}
+
+theory CircTh : CircVoc {
+	!x: And(x) & ~Broken(x) => (On(FirstInput(x)) & On(SecondInput(x)) <=> (On(Output(x)))).
+    !x: Or(x) & ~Broken(x) => (On(FirstInput(x)) | (On(Output(x)))).
+    !x: Xor(x) & ~Broken(x) => ((On(FirstInput(x)) & ~On(SecondInput(x)) | (~On(FirstInput(x)) & On(SecondInput(x)))) <=> (On(Output(x)))).
+    
+    !x: InputWireOn(x) <=> On(x) & InputWire(x).
+    !x: OutputWireOn(x) <=> On(x) & OutputWire(x).
+    
+    !x: ObservedOn(x) => On(x).
+    !x: ObservedOff(x) => ~On(x).
+    
+    NbBroken = #{x[Gate]: Broken(x)}.
+}
+
+term t: CircVoc {
+    #{x[Gate]: Broken(x)}
+}
+
+procedure main() {
+    stdoptions.nbmodels = 10
+    printmodels(modelexpand(CircTh, Circuit))
+}

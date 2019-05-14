@@ -1,0 +1,34 @@
+/*  
+ * docenten.idp
+ *
+ */
+
+vocabulary V {
+    type Docent constructed from { DVT , JVE , TGO }
+	type Vak constructed from { ApplicatieArch, ArtificieleInt, 
+									EmbeddedDinges, Graphics, ProductCert }
+    Geeft(Docent, Vak)	
+
+    type StudiePunten isa int
+    Punten(Vak): StudiePunten
+} 
+
+structure S : V {
+    StudiePunten = { 0..10 }
+    Punten = { ApplicatieArch -> 4; ArtificieleInt -> 6; 
+				 	EmbeddedDinges -> 5; Graphics -> 5; ProductCert -> 6; }
+}
+
+theory T : V {
+    ~Geeft(JVE, ProductCert).
+    ~Geeft(JVE, EmbeddedDinges).
+    Geeft(TGO, Graphics).
+	!vak[Vak] : #{doc[Docent]: Geeft(doc, vak)} = 1.
+    !doc[Docent] : doc ~= DVT => #{vak[Vak]: Geeft(doc, vak)} = 2.
+    !doc[Docent] : sum{s[StudiePunten], vak[Vak] : Geeft(doc, vak) & Punten(vak) = s : s} =< 10.
+}
+
+procedure main() {
+    stdoptions.nbmodels = 10	
+    printmodels(modelexpand(T,S))
+}

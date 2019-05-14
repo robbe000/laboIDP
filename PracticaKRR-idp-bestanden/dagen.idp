@@ -1,0 +1,33 @@
+//Robbe Goovaerts
+
+/*  
+ * dagen.idp
+ *
+ */
+
+vocabulary V {
+    type Dag constructed from { Maandag, Dinsdag, Woensdag, Donderdag, Vrijdag, Zaterdag, Zondag }
+    Kerstmis: Dag
+    Nieuwjaar: Dag
+    Pasen: Dag
+    
+    Weekend(Dag)
+} 
+
+structure S : V {
+    Weekend = {Zaterdag; Zondag}
+    Kerstmis = Maandag
+}
+
+theory T : V {
+    Weekend(Pasen).
+    Pasen ~= Zaterdag.
+    
+	Nieuwjaar = Kerstmis.
+}
+
+procedure main() {
+    stdoptions.nbmodels = 0			
+    models = modelexpand(T,S)
+    printmodels(models)
+}

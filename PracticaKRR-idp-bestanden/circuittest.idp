@@ -1,0 +1,80 @@
+/*  
+ * circuit.idp
+ *
+ */
+
+vocabulary CircVoc {
+    type Test isa int
+    
+	type Wire
+    type Gate
+    Output(Gate) : Wire
+    FirstInput(Gate) : Wire
+    SecondInput(Gate) : Wire
+    Xor(Gate)
+    And(Gate)
+    Or(Gate)
+    On(Wire, Test)
+    InputWire(Wire)
+    InputWireOn(Wire, Test)
+    OutputWire(Wire)
+    OutputWireOn(Wire, Test)
+    ObservedOn(Wire, Test)
+    ObservedOff(Wire, Test)
+    
+    Broken(Gate)  
+    type nbBroken isa int
+    NbBroken : nbBroken    
+}
+
+structure Circuit : CircVoc {
+    Test = {1; 2; 3}
+    
+    Wire = { K; L; M; N; O; P; Q; R; }
+    Gate = { A; B; C; D; E; }
+    Output = { A -> N; B -> P; C -> O; D -> Q; E -> R; }
+    FirstInput = { A -> K; B -> N; C -> L; D -> M; E -> Q; }
+    SecondInput = { A -> L; B -> M; C -> K; D -> N; E -> O; }
+    Xor = { A; B; }
+    And = { C; D; }
+    Or = { E; }
+    //On = {K;M;N;Q;R}
+    InputWire = {K ; M; L}
+    
+    InputWireOn = {K, 1; L, 1; L, 2; M, 3}
+    
+    OutputWire = {P;R}
+    //OutputWireOn = {P}
+    //OutputWireOn = {P ; R}
+    
+    //Voor de testen
+    ObservedOn = {P, 1; R, 1; P, 2; R, 2; P, 3}
+    ObservedOff = {R, 3}
+    
+    nbBroken = {0 .. 10}
+}
+
+theory CircTh : CircVoc {    
+	!x, test: And(x) & ~Broken(x) => (On(FirstInput(x), test) & On(SecondInput(x), test) <=> (On(Output(x), test))).
+    !x, test: Or(x) & ~Broken(x) => (On(FirstInput(x), test) | (On(Output(x), test))).
+    !x, test: Xor(x) & ~Broken(x) => ((On(FirstInput(x), test) & ~On(SecondInput(x), test) | (~On(FirstInput(x), test) & On(SecondInput(x), test))) <=> (On(Output(x), test))).
+    
+    !x, test: InputWireOn(x, test) <=> On(x, test) & InputWire(x).
+    !x, test: OutputWireOn(x, test) <=> On(x, test) & OutputWire(x).
+    
+    !x, test: ObservedOn(x, test) => On(x, test).
+    !x, test: ObservedOff(x, test) => ~On(x, test).
+    
+    NbBroken = #{x[Gate]: Broken(x)}.
+	
+}
+
+term t: CircVoc {
+    #{x[Gate]: Broken(x)}
+}
+
+procedure main() {
+    stdoptions.nbmodels = 10
+    printmodels(minimize(CircTh, Circuit, t))
+    //printmodels(modelexpand(CircTh, Circuit))
+}

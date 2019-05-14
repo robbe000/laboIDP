@@ -1,0 +1,48 @@
+/* 
+ * cde.idp
+ *
+ */
+
+vocabulary V {
+    type Letter isa int
+    A: Letter
+    B: Letter
+    C: Letter
+    D: Letter
+    E: Letter
+    I: Letter
+    Klinker(Letter)
+} 
+
+structure S : V {
+	Letter = {0..9}
+    Klinker = {0; 2; 4; 6; 8}
+}
+
+theory T : V {
+	// Elke letter stelt een verschillend cijfer voor
+	A ~= B & A ~= C & A ~= D & A ~= E & A ~= I &
+    B ~= A & B ~= C & B ~= D & B ~= E & B ~= I &
+    C ~= A & C ~= B & C ~= D & C ~= E & C ~= I &
+    D ~= A & D ~= B & D ~= C & D ~= E & D ~= I &
+    E ~= A & E ~= B & E ~= C & E ~= D & E ~= I &
+    I ~= A & I ~= B & I ~= C & I ~= D & I ~= E .
+    
+    E = 6.
+
+    A ~= 0.
+    B ~= 0.
+    C ~= 0.
+    
+    Klinker(E).
+    Klinker(A).
+    Klinker(I).
+    
+    (I * 1 + A * 10     +      A * 1 + B * 10) = (E * 1 + D * 10 + C * 100).
+}
+
+procedure main() {	
+    stdoptions.nbmodels = 10
+    printmodels(modelexpand(T, S))	
+}
+

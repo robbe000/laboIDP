@@ -1,0 +1,21 @@
+//Robbe Goovaerts
+
+vocabulary V {
+    a
+    b
+    c
+}
+
+structure S: V {
+    a = true
+    b = true
+    c = true
+}
+
+theory T: V {
+    a & (b | ~c).
+}
+
+procedure main() {
+    print(sat(T, S))
+}

@@ -1,0 +1,36 @@
+//Robbe Goovaerts
+
+vocabulary V {
+    x
+    y
+    z
+}
+
+structure S: V {
+    x = true
+    y = true
+    z = false
+}
+
+structure S1: V {
+    x = false
+    y = true
+    z = false
+}
+
+structure S2: V {
+    x = true
+    y = true
+    z = true
+}
+
+theory T: V {
+    (x & y) | (y & z) | (x & z).
+    ~(x & y & z).
+}
+
+procedure main() {
+    print(sat(T, S))
+    print(sat(T, S1))
+    print(sat(T, S2))
+}

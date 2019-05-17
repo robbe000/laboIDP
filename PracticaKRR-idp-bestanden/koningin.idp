@@ -18,8 +18,13 @@ structure S : V {
 
 theory T : V{
     #{r k: Koningin(r,k)} = 8.
-    !r1 r2 k1 k2: (r1~=r2|k1~=k2) & Koningin(r1,k1) & Koningin(r2,k2) 
-												=> ~Slaan(r1, r2, k1, k2). 
+    !r1 r2 k1 k2: (r1~=r2|k1~=k2) & Koningin(r1,k1) & Koningin(r2,k2) => ~Slaan(r1, k1, r2, k2).
+    {
+        !r1 r2 k1 k2: Slaan(r1, k1, r2, k2) <- r1 = r2.
+        !r1 r2 k1 k2: Slaan(r1, k1, r2, k2) <- k1 = k2.
+        !r1 r2 k1 k2: Slaan(r1, k1, r2, k2) <- r1+k1 = r2+k2.
+        !r1 r2 k1 k2: Slaan(r1, k1, r2, k2) <- r1-k1 = r2-k2.
+    }
 }
 
 procedure main(){

@@ -1,0 +1,109 @@
+/*  
+ * puzzel.idp
+ *
+ */
+ 
+vocabulary V {
+    type Rij isa int
+    type Kolom isa int
+    type Aantlamp isa int
+
+    Licht(Rij, Kolom)
+    
+    //Licht geblokeerd door een baricade
+    Geblokeerd(Rij, Kolom, Rij, Kolom)
+    
+    //Zou in theore (zonder baricades) kunnen schijnen
+    TheoSchijn(Rij, Kolom, Rij, Kolom)
+    
+    //Dit is de relatie waarbij twee cellen op elkaar zouden kunnen schijnen
+    //Indien er een lamp in zou staan uiteraard
+    Schijn(Rij, Kolom, Rij, Kolom)
+    
+    Verlicht(Rij, Kolom)
+    Baricade(Rij, Kolom)
+    
+    Buur(Rij, Kolom, Rij, Kolom)
+    AantalNaburigeLampen(Rij, Kolom, Aantlamp)
+}
+
+structure S : V {
+    //Opgave 1
+    Rij = {1..5}
+    Kolom = {1..5}
+    
+   
+    Baricade = {
+        1,3; 1,5; 2,4; 3,3; 5,2
+    }
+    
+    AantalNaburigeLampen = {
+        2,4,4; 3,3,4; 5,2,0
+    }
+    
+    //Opgave 2 (zelfverzonnen test)(foto in bijlage)
+    /*
+    Rij = {1..8}
+    Kolom = {1..8}
+    
+   
+    Baricade = {
+        1,5; 2,1; 3,3; 4,7; 5,6; 6,4; 7,1; 8,5
+    }
+    
+    AantalNaburigeLampen = {
+        2,1,3; 5,6,1; 6,4,2
+    }*/
+}
+
+theory T : V{    
+    //Waar licht plaatsen?
+    !r1 r2 k1 k2: (r1~=r2 | k1~=k2) & (Licht(r1, k1) & Licht(r2, k2))  => ~Schijn(r1, k1, r2, k2) & (~Baricade(r1, k1) & ~Baricade(r2, k2)).
+    
+    //Wanneer geblokeerd door een baricade?
+    {
+        //Zelfde rij
+        !r1 r2 r3 k1 k2 k3: Geblokeerd(r1, k1, r2, k2) <- (Baricade(r3, k3) & r1=r3 & r2=r3 & ((~(k1<k3) & ~(k2>k3)) | (~(k1>k3) & ~(k2<k3)))).
+        //Zelfde kolom
+        !r1 r2 r3 k1 k2 k3: Geblokeerd(r1, k1, r2, k2) <- (Baricade(r3, k3) & k1=k3 & k2=k3 & ((~(r1<r3) & ~(r2>r3)) | (~(r1>r3) & ~(r2<r3)))).
+    }
+    
+    //Wanneer zou een theoretische schijn mogelijk kunnen zijn?
+    {
+        //Zelfde rij
+        !r1 r2 k1 k2: TheoSchijn(r1, k1, r2, k2) <- r1 = r2.
+        //Zelfde kolom
+        !r1 r2 k1 k2: TheoSchijn(r1, k1, r2, k2) <- k1 = k2.
+    }
+    
+    //Twee cellen kunnen op elkaar schijnen als dit theoretisch mogelijk is (zelfde rij en zelfde kolom)
+    //en als er geen baricade in de weg staat m.a.w. als het licht niet Geblokeerd werd
+    !r1 k1 r2 k2: Schijn(r1, k1, r2, k2) <= TheoSchijn(r1, k1, r2, k2) & ~Geblokeerd(r1, k1, r2, k2).
+    
+    //Welke locaties belicht?
+    {
+        !r1 r2 k1 k2: Verlicht(r2, k2) <- Licht(r1, k1) & Schijn(r1, k1, r2, k2).
+    }
+    
+    //Alles moet verlicht zijn
+    !r1 k1: Verlicht(r1, k1) | Baricade(r1, k1).
+    
+    //Definieren per vakje wat zijn buren zijn (zowel horizontaal als verticaal)
+    {
+        //Volgens rij
+        !r1 r2 k1 k2: Buur(r1, k1, r2, k2) <- r1 = r2 & ((k1 = k2-1 ) | (k1-1 = k2)).
+        //Volgens kolommen
+        !r1 r2 k1 k2: Buur(r1, k1, r2, k2) <- k1 = k2 & ((r1 = r2-1 ) | (r1-1 = r2)).
+    }
+    
+    //Wanneer op r1 & k1 een lamp is en die lamp aan een voorwaarde a moet voldoen, dan moet gelden dat het aantal r2,k2 dat een buur is & een licht bevat gelijk is aan a.
+    !r1[Rij], k1[Kolom], a[Aantlamp]: Baricade(r1,k1) & AantalNaburigeLampen(r1, k1, a) => #{r2, k2: Buur(r1,k1,r2,k2) & Licht(r2,k2)} = a.
+}
+
+term t : V{
+       #{r k: Licht(r,k)}
+}
+
+procedure main(){
+    printmodels(maximize(T,S,t))
+}
